@@ -6,6 +6,7 @@ const inter = Inter({ subsets: ["latin"], weight: ["400", "500", "600"], variabl
 const display = Space_Grotesk({ subsets: ["latin"], weight: ["500", "600", "700"], variable: "--font-display" });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://www.codersalley.com"),
   title: "Coders Alley | AI agents and automation, brief to production",
   description: "We ship AI agents and automations your team can trust, alongside web and cloud engineering.",
 };
