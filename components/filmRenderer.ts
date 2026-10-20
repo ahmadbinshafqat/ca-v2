@@ -19,14 +19,20 @@ export function createFilmRenderer(cv: HTMLCanvasElement, fonts: { body: string;
   let NP: Pt[] = [];
   let LB = { x0: -0.9, x1: 0.9, y0: 0.4 };
 
-  function resize() {
+  /* panelTop: on narrow screens, the y (px) where the text panels begin; the scene is fitted above it */
+  function resize(panelTop = H * 0.62) {
     const dpr = Math.min(2, devicePixelRatio || 1);
     W = cv.clientWidth; H = cv.clientHeight;
     cv.width = W * dpr; cv.height = H * dpr;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     WIDE = W > 860;
     if (WIDE) { cx = W * 0.68; cy = H * 0.44; S = Math.min(W * 0.3, H * 0.4); }
-    else { cx = W / 2; cy = H * 0.3; S = Math.min(W * 0.44, H * 0.22); }
+    else {
+      /* the narrow scene spans about -0.72..0.98 units vertically (node row to lower band) */
+      const top = 60 + 10, room = Math.max(0, panelTop - 10 - top);
+      S = Math.max(40, Math.min(W * 0.44, H * 0.22, room / 1.7));
+      cx = W / 2; cy = top + Math.max(0, room - 1.7 * S) / 2 + 0.72 * S;
+    }
     NW = WIDE ? 0.29 : 0.54; NH = WIDE ? 0.2 : 0.26;
     NP = [];
     for (let i = 0; i < 6; i++) {
@@ -65,7 +71,7 @@ export function createFilmRenderer(cv: HTMLCanvasElement, fonts: { body: string;
   function brief(c: number, tm: number) {
     const cv0 = sm(c / 0.35), m = sm((c - 0.35) / 0.45);
     const [eu, ev] = WIDE ? [-0.78, -0.68] : [-0.6, -0.8];
-    const dw = lp(0.95, 0.34, m), dh = lp(0.9, 0.1, m), u = lp(0, eu, m), v = lp(0, ev, m);
+    const dw = lp(WIDE ? 0.95 : 1.4, 0.34, m), dh = lp(0.9, 0.1, m), u = lp(0, eu, m), v = lp(0, ev, m);
     /* highest a source chip may float: its top edge stays 16px below the 60px nav bar */
     const top = (60 + 16 - cy) / S + 0.045 + 0.02;
     if (cv0 < 1)
@@ -171,7 +177,7 @@ export function createFilmRenderer(cv: HTMLCanvasElement, fonts: { body: string;
       UC.stages.forEach((t, i) => {
         const x = lp(x0, x1, i / 5), on = pr >= i;
         bx(x, y, 0.06, 0.06, on ? rg("l", a) : rg("k", a), rg("l", 0.8 * a), a, 1.5);
-        tx(t, x, y + 0.12, on ? "w" : "m", a, 0.03);
+        tx(t, x, y + (WIDE || i % 2 == 0 ? 0.12 : -0.12), on ? "w" : "m", a, 0.03); /* narrow: alternate below/above so labels don't collide */
       });
       tx(st >= 3 ? UC.rollout[st - 3] : "Pipeline checks running", 0, y + (WIDE ? 0.26 : 0.22), "l", a, 0.04, "center", 600, DISP);
       if (WIDE) {
@@ -185,11 +191,11 @@ export function createFilmRenderer(cv: HTMLCanvasElement, fonts: { body: string;
     if (a > 0) {
       const pr = sm((c - 4.55) / 0.4);
       UC.metrics.forEach((m, i) => {
-        const x = -0.6 + i * 0.6, y = B.y0 + (WIDE ? 0.16 : 0.12);
+        const x = (i - 1) * (WIDE ? 0.6 : 0.72), y = B.y0 + (WIDE ? 0.16 : 0.12);
         tx(Math.round(m[1] * pr) + m[2], x, y, "l", a, WIDE ? 0.1 : 0.075, "center", 700, DISP);
         tx(m[0], x, y + (WIDE ? 0.13 : 0.1), "w", a, 0.032);
       });
-      tx("Feedback loop: every correction becomes a new test case", 0, B.y0 + (WIDE ? 0.42 : 0.3), "w", a * 0.9, 0.034);
+      tx("Feedback loop: every correction becomes a new test case", 0, B.y0 + (WIDE ? 0.42 : 0.34), "w", a * 0.9, 0.034);
     }
   }
 

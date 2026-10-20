@@ -45,11 +45,15 @@ export default function Film() {
       }
       raf = requestAnimationFrame(frame);
     };
-    addEventListener("resize", film$.resize);
+    /* on phones the panels sit at the bottom; fit the canvas scene above the tallest one */
+    const fit = () => film$.resize(Math.min(...panelRefs.current.map((p) => p?.offsetTop ?? innerHeight)));
+    fit();
+    document.fonts?.ready.then(fit);
+    addEventListener("resize", fit);
     raf = requestAnimationFrame(frame);
     return () => {
       cancelAnimationFrame(raf);
-      removeEventListener("resize", film$.resize);
+      removeEventListener("resize", fit);
     };
   }, [last]);
 
