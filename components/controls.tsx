@@ -29,3 +29,11 @@ export function ScrollProgress() {
   }, []);
   return <div className="prog" ref={ref} />;
 }
+
+/* Jumps to a section on first load, for routes like /services that open the home page mid-way. */
+export function ScrollToSection({ id }: { id: string }) {
+  useEffect(() => {
+    document.getElementById(id)?.scrollIntoView({ behavior: "instant", block: "start" });
+  }, [id]);
+  return null;
+}
